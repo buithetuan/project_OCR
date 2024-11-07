@@ -1,0 +1,5 @@
+venv/
+data_set/
+__pycache__/
+ocr_model.h5
+labels/
