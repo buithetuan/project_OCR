@@ -23,7 +23,6 @@ def predict_text_from_image(image_path, model):
     prediction = model.predict(image)
     predicted_class = np.argmax(prediction, axis=1)  # Lấy chỉ số lớp với xác suất cao nhất
 
-    # Đổi chỉ số lớp thành nhãn (ví dụ 36 ký tự)
     label_map = '0123456789abcdefghijklmnopqrstuvwxyz'
     return label_map[predicted_class[0]]
 
