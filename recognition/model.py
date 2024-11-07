@@ -1,5 +1,3 @@
-# recognition/model.py
-
 import tensorflow as tf
 from tensorflow.keras import layers, models
 
@@ -10,12 +8,26 @@ class OCRModel:
 
     def build_model(self):
         model = models.Sequential([
-            layers.Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 1)),
+            layers.InputLayer(input_shape=(32, 32, 1)),
+            layers.Conv2D(32, (3, 3), activation='relu'),
+            layers.BatchNormalization(),
             layers.MaxPooling2D((2, 2)),
+            layers.Dropout(0.25),
+            
             layers.Conv2D(64, (3, 3), activation='relu'),
+            layers.BatchNormalization(),
             layers.MaxPooling2D((2, 2)),
+            layers.Dropout(0.25),
+            
+            layers.Conv2D(128, (3, 3), activation='relu'),
+            layers.BatchNormalization(),
+            layers.MaxPooling2D((2, 2)),
+            layers.Dropout(0.25),
+            
             layers.Flatten(),
-            layers.Dense(128, activation='relu'),
+            layers.Dense(256, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.5),
             layers.Dense(self.num_classes, activation='softmax')
         ])
         model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])

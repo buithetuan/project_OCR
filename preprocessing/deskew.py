@@ -4,11 +4,6 @@ import cv2
 import numpy as np
 import os
 def deskew_image(image):
-    # Check if the input is a valid image array
-    if not isinstance(image, np.ndarray):
-        raise ValueError(f"Invalid image array: {image}")
-
-    print(f"Deskwing image")
     # Tính toán góc xoay cần thiết
     coords = np.column_stack(np.where(image > 0))
     angle = cv2.minAreaRect(coords)[-1]
