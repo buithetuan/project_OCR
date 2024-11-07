@@ -1,34 +1,24 @@
 import tensorflow as tf
 from tensorflow.keras import layers, models
 
-class OCRModel:
-    def __init__(self, num_classes):
-        self.num_classes = num_classes
-        self.model = self.build_model()
+def create_model():
+    model = models.Sequential()
 
-    def build_model(self):
-        model = models.Sequential([
-            layers.InputLayer(input_shape=(32, 32, 1)),
-            layers.Conv2D(32, (3, 3), activation='relu'),
-            layers.BatchNormalization(),
-            layers.MaxPooling2D((2, 2)),
-            layers.Dropout(0.25),
-            
-            layers.Conv2D(64, (3, 3), activation='relu'),
-            layers.BatchNormalization(),
-            layers.MaxPooling2D((2, 2)),
-            layers.Dropout(0.25),
-            
-            layers.Conv2D(128, (3, 3), activation='relu'),
-            layers.BatchNormalization(),
-            layers.MaxPooling2D((2, 2)),
-            layers.Dropout(0.25),
-            
-            layers.Flatten(),
-            layers.Dense(256, activation='relu'),
-            layers.BatchNormalization(),
-            layers.Dropout(0.5),
-            layers.Dense(self.num_classes, activation='softmax')
-        ])
-        model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-        return model
+    # Thêm các lớp vào mô hình (CNN)
+    model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+
+    # Chuyển ảnh 2D thành 1D
+    model.add(layers.Flatten())
+    model.add(layers.Dense(64, activation='relu'))
+    
+    # Lớp Output: số lớp bằng với số ký tự bạn muốn nhận diện (ví dụ 36 ký tự cho bảng chữ cái và số)
+    model.add(layers.Dense(36, activation='softmax'))
+
+    # Tóm tắt mô hình
+    model.summary()
+    
+    return model
