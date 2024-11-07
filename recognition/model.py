@@ -15,7 +15,7 @@ def create_model():
     model.add(layers.Flatten())
     model.add(layers.Dense(64, activation='relu'))
     
-    # Lớp Output: số lớp bằng với số ký tự bạn muốn nhận diện (ví dụ 36 ký tự cho bảng chữ cái và số)
+    # Lớp Output: số lớp bằng với số ký tự
     model.add(layers.Dense(36, activation='softmax'))
 
     # Tóm tắt mô hình
