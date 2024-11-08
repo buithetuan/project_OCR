@@ -39,12 +39,6 @@ def predict_character(char_img, model):
     print(f"Predicted character: {predicted_class[0]}")    
     return predicted_class[0]
 
-def recognize_text_from_image(image_path, model):
-    """
-    Hàm nhận diện văn bản từ một ảnh chứa nhiều ký tự.
-    """
-    img = preprocess_input_image(image_path)
-
     if img is None:
         return " "
     

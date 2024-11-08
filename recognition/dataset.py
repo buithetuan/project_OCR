@@ -4,7 +4,7 @@ import pandas as pd
 import cv2
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
-from preprocessing.preprocess_image import preprocess_image  # Import hàm preprocess_image
+from preprocessing.preprocess_image import preprocess_image  
 
 def load_data(training_data_dir='data_set/training_data', testing_data_dir='data_set/testing_data'):
     """
