@@ -32,30 +32,24 @@ def load_data(data_dir, labels_file, max_images_per_class=100):
         # Duyệt qua các ảnh đã chọn
         for _, row in selected_images.iterrows():
             image_path = os.path.join(data_dir, row['filename'])
-            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)  # Đọc ảnh dưới dạng ảnh xám
+            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)  
             
-            # Tiền xử lý ảnh nếu cần (ví dụ: xoay thẳng, khử nhiễu, nhị phân...)
             image = preprocess_image(image)
             
             # Thêm ảnh và nhãn vào dữ liệu
             data.append(image)
             labels.append(row['label'])
     
-    # Chuyển danh sách dữ liệu thành mảng numpy
     data = np.array(data)
     labels = np.array(labels)
     
-    # Tiến hành mã hóa nhãn (Label Encoding)
     label_encoder = LabelEncoder()
     labels = label_encoder.fit_transform(labels)
     
-    # Chuyển nhãn thành dạng one-hot encoding
     labels = to_categorical(labels)
     
-    # Chuẩn hóa dữ liệu (có thể thay đổi tùy theo yêu cầu của mô hình)
     data = data.astype('float32') / 255.0
-    
-    # Thêm chiều cho dữ liệu ảnh (bắt buộc đối với CNN)
+
     data = np.expand_dims(data, axis=-1)
     
     return data, labels
@@ -67,7 +61,6 @@ def preprocess_image(image):
     :param image: ảnh đầu vào
     :return: ảnh đã tiền xử lý
     """
-    # Chuyển ảnh thành ảnh nhị phân (có thể thay đổi tùy theo yêu cầu)
     _, binary = cv2.threshold(image, 128, 255, cv2.THRESH_BINARY)
     
     return binary
