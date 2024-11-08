@@ -1,63 +1,76 @@
-# recognition/recognize_text.py
-import cv2
-import numpy as np
-from tensorflow.keras.models import load_model
 from segmentation.line_segment import segment_lines
 from segmentation.word_segment import segment_words
 from segmentation.char_segment import segment_characters
-from tensorflow.keras.preprocessing.image import img_to_array
-from tensorflow.keras.preprocessing import image
+import cv2
+import numpy as np
+from tensorflow.keras.models import load_model
+from preprocessing.preprocess_image import preprocess_image
+import os
+import matplotlib.pyplot as plt
 
 def load_trained_model(model_path):
-    model = load_model(model_path)
-    return model
+    return load_model(model_path)
 
-def predict_text_from_image(image_path, model):
-    # Đọc ảnh và chuyển sang grayscale
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    image = cv2.resize(image, (28, 28))  # Thay đổi kích thước ảnh phù hợp với mô hình
-    image = np.reshape(image, (1, 28, 28, 1))  # Định dạng lại ảnh cho mô hình
-    image = image.astype('float32') / 255.0  # Chuẩn hóa ảnh
+def preprocess_input_image(image_path):
+    """
+    Tiền xử lý ảnh đầu vào để phù hợp với mô hình đã huấn luyện.
+    """
+    if not os.path.exists(image_path):
+        print(f"Error: Image not found at path {image_path}")
+        return None 
+    
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img is None:
+        print(f"Error: Failed to read image at path {image_path}")
+        return None 
+    
+    img = cv2.resize(img, (28, 28))
+    img = preprocess_image(img)
+    img = img.astype('float32') / 255.0
+    img = img.reshape(1, 28, 28, 1)
+    return img
 
-    # Dự đoán ký tự từ ảnh
-    prediction = model.predict(image)
-    predicted_class = np.argmax(prediction, axis=1)  # Lấy chỉ số lớp với xác suất cao nhất
+def predict_character(char_img, model):
+    """
+    Hàm dự đoán ký tự từ ảnh đầu vào.
+    """
+    predictions = model.predict(char_img)
+    predicted_class = np.argmax(predictions, axis=1)
+    print(f"Predicted character: {predicted_class[0]}")    
+    return predicted_class[0]
 
-    # Đổi chỉ số lớp thành nhãn (ví dụ 36 ký tự)
-    label_map = '0123456789abcdefghijklmnopqrstuvwxyz'
-    return label_map[predicted_class[0]]
+def recognize_text_from_image(image_path, model):
+    """
+    Hàm nhận diện văn bản từ một ảnh chứa nhiều ký tự.
+    """
+    img = preprocess_input_image(image_path)
 
-def extract_text_from_image(image_path, model):
-    # Đọc ảnh
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img is None:
+        return " "
+    
+    img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)[1] 
 
-    # Phân đoạn thành các dòng
-    line_images = segment_lines(image)
+    if len(img.shape) == 3:
+        img = img.squeeze()
 
-    # Dự đoán văn bản từ các dòng
-    full_text = ''
-    for line_image in line_images:
-        # Phân đoạn mỗi dòng thành các từ
-        word_images = segment_words(line_image)
+    plt.imshow(img, cmap='gray')
+    plt.title("Processed Image")
+    plt.show()
 
-        # Dự đoán văn bản từ các từ
-        for word_image in word_images:
-            # Phân đoạn mỗi từ thành các ký tự
-            character_images = segment_characters(word_image)
+    img = img.astype(np.uint8)
 
-            # Dự đoán văn bản từ các ký tự
-            word = ''
-            for char_img in character_images:
-                char_img_resized = cv2.resize(char_img, (28, 28))  # Điều chỉnh kích thước
-                char_img_resized = np.reshape(char_img_resized, (1, 28, 28, 1))  # Định dạng lại ảnh
-                char_img_resized = char_img_resized.astype('float32') / 255.0  # Chuẩn hóa ảnh
+    characters = []
 
-                # Dự đoán ký tự
-                prediction = model.predict(char_img_resized)
-                predicted_class = np.argmax(prediction, axis=1)
-                label_map = '0123456789abcdefghijklmnopqrstuvwxyz'
-                word += label_map[predicted_class[0]]
-            
-            full_text += word + ' '
+    lines = segment_lines(img)
+    print(f"Detected lines: {len(lines)}")
+    for line in lines:
+        words = segment_words(line)
+        print(f"Detected words in line: {len(words)}") 
+        for word in words:
+            chars = segment_characters(word)
+            print(f"Detected characters in word: {len(chars)}")
+            for char_img in chars:
+                char = predict_character(char_img, model)
+                characters.append(str(char))
 
-    return full_text
+    return ''.join(characters)
